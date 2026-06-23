@@ -1,0 +1,29 @@
+{
+	"name": "copy_pipepline_scheduler",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "pipeline1",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2026-06-22T17:10:00",
+				"timeZone": "India Standard Time",
+				"schedule": {
+					"hours": [
+						6
+					]
+				}
+			}
+		}
+	}
+}
