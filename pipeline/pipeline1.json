@@ -28,6 +28,7 @@
 								"value": "@utcNow()",
 								"type": "Expression"
 							},
+							"wildcardFileName": "*",
 							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
@@ -57,13 +58,13 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "source_dataset",
+						"referenceName": "Source_dataset",
 						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "source_dataset",
+						"referenceName": "Sink_dataset",
 						"type": "DatasetReference"
 					}
 				]
@@ -89,10 +90,10 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "source_dataset",
+						"referenceName": "Source_dataset",
 						"type": "DatasetReference"
 					},
-					"enableLogging": true,
+					"enableLogging": false,
 					"storeSettings": {
 						"type": "AzureBlobFSReadSettings",
 						"recursive": true,
@@ -104,6 +105,7 @@
 							"value": "@utcNow()",
 							"type": "Expression"
 						},
+						"wildcardFileName": "*",
 						"enablePartitionDiscovery": false
 					}
 				}
