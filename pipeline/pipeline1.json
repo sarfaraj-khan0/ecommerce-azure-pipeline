@@ -16,35 +16,19 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "AzureBlobFSReadSettings",
-							"recursive": true,
-							"modifiedDatetimeStart": {
-								"value": "@adddays(utcNow(),-7)",
-								"type": "Expression"
-							},
-							"modifiedDatetimeEnd": {
-								"value": "@utcNow()",
-								"type": "Expression"
-							},
-							"wildcardFileName": "*",
-							"enablePartitionDiscovery": false
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT * FROM @{pipeline().parameters.table_name} WHERE updated_at > (SELECT last_updated FROM watermarktracker WHERE table_name = '@{pipeline().parameters.table_name}')",
+							"type": "Expression"
 						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
 					},
 					"sink": {
-						"type": "DelimitedTextSink",
-						"storeSettings": {
-							"type": "AzureBlobFSWriteSettings"
-						},
-						"formatSettings": {
-							"type": "DelimitedTextWriteSettings",
-							"quoteAllText": true,
-							"fileExtension": ".txt"
-						}
+						"type": "AzureSqlSink",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
 					},
 					"enableStaging": false,
 					"translator": {
@@ -58,20 +42,20 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "Source_dataset",
+						"referenceName": "SOURCE_DATASET",
 						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "Sink_dataset",
+						"referenceName": "SINK_DATASET",
 						"type": "DatasetReference"
 					}
 				]
 			},
 			{
-				"name": "Delete1",
-				"type": "Delete",
+				"name": "If Condition1",
+				"type": "IfCondition",
 				"dependsOn": [
 					{
 						"activity": "Copy data1",
@@ -80,37 +64,116 @@
 						]
 					}
 				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
 				"userProperties": [],
 				"typeProperties": {
-					"dataset": {
-						"referenceName": "Source_dataset",
-						"type": "DatasetReference"
+					"expression": {
+						"value": "@greater(activity('Copy data1').output.rowsCopied,0)",
+						"type": "Expression"
 					},
-					"enableLogging": false,
-					"storeSettings": {
-						"type": "AzureBlobFSReadSettings",
-						"recursive": true,
-						"modifiedDatetimeStart": {
-							"value": "@adddays(utcNow(),-7)",
-							"type": "Expression"
+					"ifFalseActivities": [
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "message",
+								"value": "no new recods added"
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "Lookup1",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "select max(updated_at) as updated_at from @{pipeline().parameters.table_name}",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "SOURCE_DATASET",
+									"type": "DatasetReference"
+								},
+								"firstRowOnly": true
+							}
 						},
-						"modifiedDatetimeEnd": {
-							"value": "@utcNow()",
-							"type": "Expression"
-						},
-						"wildcardFileName": "*",
-						"enablePartitionDiscovery": false
-					}
+						{
+							"name": "Stored procedure1_copy1",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Lookup1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[sp_updatewatermark]",
+								"storedProcedureParameters": {
+									"last_updated": {
+										"value": {
+											"value": "@activity('Lookup1').output.firstRow.updated_at",
+											"type": "Expression"
+										},
+										"type": "DateTime"
+									},
+									"table_name": {
+										"value": {
+											"value": "@pipeline().parameters.table_name",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "azure_sql_LS",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
 				}
 			}
 		],
+		"parameters": {
+			"table_name": {
+				"type": "string",
+				"defaultValue": "customer"
+			}
+		},
+		"variables": {
+			"message": {
+				"type": "String"
+			}
+		},
 		"annotations": []
 	}
 }
