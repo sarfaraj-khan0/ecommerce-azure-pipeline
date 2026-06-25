@@ -6,7 +6,7 @@
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "pipeline1",
+					"referenceName": "Incremental load with conditional loigc",
 					"type": "PipelineReference"
 				}
 			}

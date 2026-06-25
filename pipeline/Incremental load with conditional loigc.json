@@ -1,5 +1,5 @@
 {
-	"name": "pipeline1",
+	"name": "Incremental load with conditional loigc",
 	"properties": {
 		"activities": [
 			{
