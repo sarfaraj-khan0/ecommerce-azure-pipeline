@@ -1,0 +1,27 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "avddevdf1"
+		},
+		"adls_link_Service_accountKey": {
+			"value": ""
+		},
+		"azure_sql_LS_password": {
+			"value": ""
+		},
+		"adls_link_Service_properties_typeProperties_url": {
+			"value": "https://avddevalds.dfs.core.windows.net/"
+		},
+		"azure_sql_LS_properties_typeProperties_server": {
+			"value": "mydbserverr1.database.windows.net"
+		},
+		"azure_sql_LS_properties_typeProperties_database": {
+			"value": "my_db"
+		},
+		"azure_sql_LS_properties_typeProperties_userName": {
+			"value": "avduser"
+		}
+	}
+}
